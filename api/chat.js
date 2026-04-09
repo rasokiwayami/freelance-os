@@ -1,37 +1,19 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import { createClient } from '@supabase/supabase-js'
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
 
   if (req.method === 'OPTIONS') return res.status(200).end()
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  const { message, userId } = req.body
-  if (!message || !userId) return res.status(400).json({ error: 'message と userId は必須です' })
+  const { message, projects, transactions, clients } = req.body
+  if (!message) return res.status(400).json({ error: 'message は必須です' })
 
-  const authHeader = req.headers['authorization'] ?? ''
-  const token = authHeader.replace('Bearer ', '')
-  if (!token) return res.status(401).json({ error: '認証トークンがありません' })
-
-  // ユーザーの JWT で Supabase クライアントを作成（RLS が適用される）
-  const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.VITE_SUPABASE_ANON_KEY,
-    { global: { headers: { Authorization: `Bearer ${token}` } } }
-  )
-
-  const [{ data: projects }, { data: transactions }, { data: clients }] = await Promise.all([
-    supabase.from('projects').select('*').eq('user_id', userId),
-    supabase.from('transactions').select('*').eq('user_id', userId),
-    supabase.from('clients').select('*').eq('user_id', userId),
-  ])
-
-  const systemPrompt = `あなたはフリーランス業務管理アシスタントです。
+  const prompt = `あなたはフリーランス業務管理アシスタントです。
 以下はユーザーの現在のデータです。このデータを参照して質問に回答してください。
 金額は円で、カンマ区切りで表示してください。
 データにない情報を推測で答えないでください。
@@ -49,7 +31,7 @@ ${JSON.stringify(clients ?? [])}
 
   try {
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
-    const result = await model.generateContent(systemPrompt)
+    const result = await model.generateContent(prompt)
     const reply = result.response.text()
     return res.status(200).json({ reply })
   } catch (err) {

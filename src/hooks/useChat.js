@@ -1,14 +1,19 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from './useAuth'
+import { useProjects } from './useProjects'
+import { useTransactions } from './useTransactions'
+import { useClients } from './useClients'
 
 export function useChat() {
   const { user } = useAuth()
+  const { data: projects } = useProjects()
+  const { data: transactions } = useTransactions()
+  const { data: clients } = useClients()
   const [messages, setMessages] = useState([])
   const [sending, setSending] = useState(false)
   const [error, setError] = useState(null)
 
-  // 過去の履歴を読み込む
   useEffect(() => {
     if (!user) return
     const load = async () => {
@@ -29,19 +34,14 @@ export function useChat() {
     const userMsg = { role: 'user', content }
     setMessages((prev) => [...prev, userMsg])
 
-    // Supabaseに保存
     await supabase.from('chat_history').insert({ user_id: user.id, role: 'user', content })
 
     setSending(true)
     try {
-      const { data: { session } } = await supabase.auth.getSession()
       const res = await fetch('/api/chat', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token}`,
-        },
-        body: JSON.stringify({ message: content, userId: user.id }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: content, projects, transactions, clients }),
       })
       if (!res.ok) throw new Error('APIエラー')
       const { reply } = await res.json()
