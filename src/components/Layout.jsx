@@ -45,13 +45,13 @@ export default function Layout() {
       {/* サイドバー */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-30 flex w-60 flex-col bg-sidebar border-r border-sidebar-border transition-transform duration-200',
+          'fixed inset-y-0 left-0 z-30 flex w-60 flex-col bg-zinc-900 transition-transform duration-200',
           'md:translate-x-0',
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
         <div className="p-6">
-          <h1 className="text-xl font-semibold text-sidebar-foreground">FreelanceOS</h1>
+          <h1 className="text-xl font-semibold text-white">FreelanceOS</h1>
         </div>
 
         <nav className="flex-1 px-3">
@@ -64,8 +64,8 @@ export default function Layout() {
                 cn(
                   'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 text-sm transition-colors',
                   isActive
-                    ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
-                    : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
+                    ? 'bg-zinc-700 text-white font-medium'
+                    : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
                 )
               }
             >
@@ -78,7 +78,7 @@ export default function Layout() {
         <div className="p-3">
           <Button
             variant="ghost"
-            className="w-full justify-start text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+            className="w-full justify-start text-zinc-400 hover:bg-zinc-800 hover:text-white"
             onClick={handleSignOut}
           >
             <LogOut className="w-4 h-4 mr-3" />

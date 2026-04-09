@@ -1,16 +1,11 @@
 import { useMemo } from 'react'
 import {
   Bar, BarChart, Pie, PieChart, Cell,
-  ResponsiveContainer, XAxis, YAxis, CartesianGrid,
+  ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
 } from 'recharts'
 import { useProjects } from '../hooks/useProjects'
 import { useTransactions } from '../hooks/useTransactions'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from '../components/ui/chart'
 import { TrendingUp, Briefcase, AlertCircle, CreditCard } from 'lucide-react'
 
 const fmt = (n) => `¥${Number(n).toLocaleString('ja-JP')}`
@@ -24,12 +19,14 @@ const STATUS_LABELS = {
 }
 
 const PIE_COLORS = [
-  'hsl(var(--chart-1))',
-  'hsl(var(--chart-2))',
-  'hsl(var(--chart-3))',
-  'hsl(var(--chart-4))',
-  'hsl(var(--chart-5))',
+  '#6366f1',
+  '#22c55e',
+  '#f59e0b',
+  '#ef4444',
+  '#a855f7',
 ]
+
+const BAR_COLOR = '#6366f1'
 
 function getMonthKey(dateStr) {
   const d = new Date(dateStr)
@@ -108,14 +105,6 @@ export default function DashboardPage() {
   const recent5 = useMemo(() => transactions.slice(0, 5), [transactions])
   const loading = pLoading || tLoading
 
-  const chartConfig = {
-    revenue: { label: '売上', color: 'hsl(var(--chart-1))' },
-  }
-
-  const pieConfig = Object.fromEntries(
-    pieData.map((d, i) => [d.name, { label: d.name, color: PIE_COLORS[i % PIE_COLORS.length] }])
-  )
-
   return (
     <div className="max-w-7xl mx-auto space-y-8">
       {/* KPIカード */}
@@ -130,30 +119,30 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-[hsl(var(--chart-2))]">
+        <Card className="border-l-4 border-l-green-500">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">進行中の案件</CardTitle>
-            <Briefcase className="w-4 h-4 text-[hsl(var(--chart-2))]" />
+            <Briefcase className="w-4 h-4 text-green-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{loading ? '—' : `${inProgressCount} 件`}</div>
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-[hsl(var(--chart-3))]">
+        <Card className="border-l-4 border-l-amber-500">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">未入金額</CardTitle>
-            <AlertCircle className="w-4 h-4 text-[hsl(var(--chart-3))]" />
+            <AlertCircle className="w-4 h-4 text-amber-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{loading ? '—' : fmt(unpaidTotal)}</div>
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-[hsl(var(--chart-4))]">
+        <Card className="border-l-4 border-l-red-500">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">月間経費</CardTitle>
-            <CreditCard className="w-4 h-4 text-[hsl(var(--chart-4))]" />
+            <CreditCard className="w-4 h-4 text-red-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{loading ? '—' : fmt(monthlyExpense)}</div>
@@ -168,24 +157,21 @@ export default function DashboardPage() {
             <CardTitle>月間売上推移</CardTitle>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={chartConfig} className="h-[300px]">
+            <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={barData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="month" stroke="#9ca3af" fontSize={12} />
                   <YAxis
-                    stroke="hsl(var(--muted-foreground))"
+                    stroke="#9ca3af"
                     fontSize={12}
                     tickFormatter={(v) => `¥${(v / 10000).toFixed(0)}万`}
                   />
-                  <ChartTooltip
-                    content={<ChartTooltipContent />}
-                    formatter={(v) => fmt(v)}
-                  />
-                  <Bar dataKey="revenue" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
+                  <Tooltip formatter={(v) => [fmt(v), '売上']} />
+                  <Bar dataKey="revenue" fill={BAR_COLOR} radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
-            </ChartContainer>
+            </div>
           </CardContent>
         </Card>
 
@@ -197,7 +183,7 @@ export default function DashboardPage() {
             {pieData.length === 0 ? (
               <p className="py-24 text-center text-sm text-muted-foreground">データがありません</p>
             ) : (
-              <ChartContainer config={pieConfig} className="h-[300px]">
+              <div className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -213,10 +199,11 @@ export default function DashboardPage() {
                         <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                       ))}
                     </Pie>
-                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Tooltip />
+                    <Legend />
                   </PieChart>
                 </ResponsiveContainer>
-              </ChartContainer>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -241,7 +228,7 @@ export default function DashboardPage() {
                     <p className="font-medium text-sm">{t.description || t.category || '—'}</p>
                     <p className="text-xs text-muted-foreground">{t.date}</p>
                   </div>
-                  <span className={`font-semibold text-sm ${t.type === 'income' ? 'text-[hsl(var(--chart-2))]' : 'text-muted-foreground'}`}>
+                  <span className={`font-semibold text-sm ${t.type === 'income' ? 'text-green-600' : 'text-red-500'}`}>
                     {t.type === 'income' ? '+' : '-'}{fmt(t.amount)}
                   </span>
                 </div>
