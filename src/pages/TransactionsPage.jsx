@@ -86,7 +86,7 @@ export default function TransactionsPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">入出金</h1>
+        <h1 className="text-2xl font-bold">入出金</h1>
         <Button onClick={openCreate} size="sm">
           <Plus size={16} className="mr-1" /> 新規登録
         </Button>

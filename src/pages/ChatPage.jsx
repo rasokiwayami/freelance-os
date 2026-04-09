@@ -28,7 +28,7 @@ export default function ChatPage() {
 
   return (
     <div className="flex h-[calc(100vh-8rem)] flex-col">
-      <h1 className="mb-4 text-2xl font-semibold">AIチャット</h1>
+      <h1 className="mb-4 text-2xl font-bold">AIチャット</h1>
 
       {/* メッセージリスト */}
       <div className="flex-1 overflow-y-auto rounded-lg border bg-muted/20 p-4 space-y-4">

@@ -115,7 +115,7 @@ export default function ProjectsPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">案件</h1>
+        <h1 className="text-2xl font-bold">案件</h1>
         <Button onClick={openCreate} size="sm">
           <Plus size={16} className="mr-1" /> 新規案件
         </Button>
