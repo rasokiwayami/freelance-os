@@ -1,7 +1,7 @@
-import Anthropic from '@anthropic-ai/sdk'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 import { createClient } from '@supabase/supabase-js'
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -37,20 +37,17 @@ ${JSON.stringify(projects ?? [])}
 ${JSON.stringify(transactions ?? [])}
 
 【クライアント一覧】
-${JSON.stringify(clients ?? [])}`
+${JSON.stringify(clients ?? [])}
+
+ユーザーの質問: ${message}`
 
   try {
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1024,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: message }],
-    })
-
-    const reply = response.content[0].text
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+    const result = await model.generateContent(systemPrompt)
+    const reply = result.response.text()
     return res.status(200).json({ reply })
   } catch (err) {
-    console.error('Anthropic API error:', err)
+    console.error('Gemini API error:', err)
     return res.status(500).json({ error: 'AI応答の取得に失敗しました' })
   }
 }
