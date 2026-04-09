@@ -3,9 +3,9 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import {
   LayoutDashboard,
-  Briefcase,
+  FolderKanban,
   Users,
-  ArrowLeftRight,
+  Receipt,
   MessageSquare,
   LogOut,
   Menu,
@@ -16,9 +16,9 @@ import { cn } from '../lib/utils'
 
 const navItems = [
   { to: '/dashboard', label: 'ダッシュボード', icon: LayoutDashboard },
-  { to: '/projects', label: '案件', icon: Briefcase },
+  { to: '/projects', label: '案件', icon: FolderKanban },
   { to: '/clients', label: 'クライアント', icon: Users },
-  { to: '/transactions', label: '入出金', icon: ArrowLeftRight },
+  { to: '/transactions', label: '入出金', icon: Receipt },
   { to: '/chat', label: 'AIチャット', icon: MessageSquare },
 ]
 
@@ -33,7 +33,7 @@ export default function Layout() {
   }
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex h-screen bg-background">
       {/* モバイル：オーバーレイ */}
       {mobileOpen && (
         <div
@@ -45,18 +45,16 @@ export default function Layout() {
       {/* サイドバー */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-30 flex w-60 flex-col border-r bg-sidebar transition-transform duration-200',
+          'fixed inset-y-0 left-0 z-30 flex w-60 flex-col bg-sidebar border-r border-sidebar-border transition-transform duration-200',
           'md:translate-x-0',
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
-        {/* ロゴ */}
-        <div className="flex h-14 items-center border-b px-4">
-          <span className="text-lg font-semibold">FreelanceOS</span>
+        <div className="p-6">
+          <h1 className="text-xl font-semibold text-sidebar-foreground">FreelanceOS</h1>
         </div>
 
-        {/* ナビ */}
-        <nav className="flex-1 space-y-1 p-2">
+        <nav className="flex-1 px-3">
           {navItems.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
@@ -64,48 +62,48 @@ export default function Layout() {
               onClick={() => setMobileOpen(false)}
               className={({ isActive }) =>
                 cn(
-                  'flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors',
+                  'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 text-sm transition-colors',
                   isActive
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                    ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
+                    : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
                 )
               }
             >
-              <Icon size={18} />
+              <Icon className="w-4 h-4" />
               {label}
             </NavLink>
           ))}
         </nav>
 
-        {/* ログアウト */}
-        <div className="border-t p-2">
-          <button
+        <div className="p-3">
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
             onClick={handleSignOut}
-            className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
           >
-            <LogOut size={18} />
+            <LogOut className="w-4 h-4 mr-3" />
             ログアウト
-          </button>
+          </Button>
         </div>
       </aside>
 
       {/* メインエリア */}
-      <div className="flex flex-1 flex-col md:pl-60">
+      <div className="flex flex-1 flex-col md:pl-60 overflow-hidden">
         {/* ヘッダー */}
-        <header className="sticky top-0 z-10 flex h-14 items-center border-b bg-background px-4">
+        <header className="h-16 border-b border-border bg-card px-6 flex items-center justify-between flex-shrink-0">
           <Button
             variant="ghost"
             size="icon"
-            className="mr-2 md:hidden"
+            className="md:hidden"
             onClick={() => setMobileOpen((v) => !v)}
           >
-            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </Button>
-          <span className="ml-auto text-sm text-muted-foreground">{user?.email}</span>
+          <div className="ml-auto text-sm text-muted-foreground">{user?.email}</div>
         </header>
 
         {/* コンテンツ */}
-        <main className="flex-1 p-6">
+        <main className="flex-1 overflow-auto p-8">
           <Outlet />
         </main>
       </div>

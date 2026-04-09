@@ -1,12 +1,17 @@
 import { useMemo } from 'react'
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend,
+  Bar, BarChart, Pie, PieChart, Cell,
+  ResponsiveContainer, XAxis, YAxis, CartesianGrid,
 } from 'recharts'
 import { useProjects } from '../hooks/useProjects'
 import { useTransactions } from '../hooks/useTransactions'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
-import { TrendingUp, Briefcase, AlertCircle, TrendingDown } from 'lucide-react'
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '../components/ui/chart'
+import { TrendingUp, Briefcase, AlertCircle, CreditCard } from 'lucide-react'
 
 const fmt = (n) => `¥${Number(n).toLocaleString('ja-JP')}`
 
@@ -18,7 +23,13 @@ const STATUS_LABELS = {
   paid: '入金済',
 }
 
-const PIE_COLORS = ['#6366f1', '#f59e0b', '#10b981', '#3b82f6', '#ec4899']
+const PIE_COLORS = [
+  'hsl(var(--chart-1))',
+  'hsl(var(--chart-2))',
+  'hsl(var(--chart-3))',
+  'hsl(var(--chart-4))',
+  'hsl(var(--chart-5))',
+]
 
 function getMonthKey(dateStr) {
   const d = new Date(dateStr)
@@ -30,7 +41,10 @@ function getLast6Months() {
   const now = new Date()
   for (let i = 5; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-    months.push(`${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}`)
+    months.push({
+      key: `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}`,
+      label: `${d.getMonth() + 1}月`,
+    })
   }
   return months
 }
@@ -68,130 +82,166 @@ export default function DashboardPage() {
     [projects]
   )
 
-  // 月次収入グラフ
   const last6 = getLast6Months()
+
   const barData = useMemo(() =>
-    last6.map((month) => ({
-      month: month.slice(5), // MM
-      収入: transactions
-        .filter((t) => t.type === 'income' && getMonthKey(t.date) === month)
+    last6.map(({ key, label }) => ({
+      month: label,
+      revenue: transactions
+        .filter((t) => t.type === 'income' && getMonthKey(t.date) === key)
         .reduce((s, t) => s + t.amount, 0),
     })),
     [transactions, last6]
   )
 
-  // ステータス別案件数
   const pieData = useMemo(() => {
     const counts = {}
     projects.forEach((p) => {
       counts[p.status] = (counts[p.status] || 0) + 1
     })
-    return Object.entries(counts).map(([status, count]) => ({
+    return Object.entries(counts).map(([status, value]) => ({
       name: STATUS_LABELS[status] || status,
-      value: count,
+      value,
     }))
   }, [projects])
 
-  // 直近5件
   const recent5 = useMemo(() => transactions.slice(0, 5), [transactions])
-
   const loading = pLoading || tLoading
 
-  return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">ダッシュボード</h1>
+  const chartConfig = {
+    revenue: { label: '売上', color: 'hsl(var(--chart-1))' },
+  }
 
+  const pieConfig = Object.fromEntries(
+    pieData.map((d, i) => [d.name, { label: d.name, color: PIE_COLORS[i % PIE_COLORS.length] }])
+  )
+
+  return (
+    <div className="max-w-7xl mx-auto space-y-8">
       {/* KPIカード */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <KpiCard
-          title="今月の収入"
-          value={fmt(monthlyIncome)}
-          icon={<TrendingUp size={18} className="text-green-500" />}
-          loading={loading}
-        />
-        <KpiCard
-          title="進行中の案件"
-          value={`${inProgressCount} 件`}
-          icon={<Briefcase size={18} className="text-blue-500" />}
-          loading={loading}
-        />
-        <KpiCard
-          title="未入金合計"
-          value={fmt(unpaidTotal)}
-          icon={<AlertCircle size={18} className="text-yellow-500" />}
-          loading={loading}
-        />
-        <KpiCard
-          title="今月の支出"
-          value={fmt(monthlyExpense)}
-          icon={<TrendingDown size={18} className="text-red-500" />}
-          loading={loading}
-        />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="border-l-4 border-l-primary">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">月間収入</CardTitle>
+            <TrendingUp className="w-4 h-4 text-primary" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{loading ? '—' : fmt(monthlyIncome)}</div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-[hsl(var(--chart-2))]">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">進行中の案件</CardTitle>
+            <Briefcase className="w-4 h-4 text-[hsl(var(--chart-2))]" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{loading ? '—' : `${inProgressCount} 件`}</div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-[hsl(var(--chart-3))]">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">未入金額</CardTitle>
+            <AlertCircle className="w-4 h-4 text-[hsl(var(--chart-3))]" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{loading ? '—' : fmt(unpaidTotal)}</div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-[hsl(var(--chart-4))]">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">月間経費</CardTitle>
+            <CreditCard className="w-4 h-4 text-[hsl(var(--chart-4))]" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{loading ? '—' : fmt(monthlyExpense)}</div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* グラフ */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">月次収入推移（過去6ヶ月）</CardTitle>
+            <CardTitle>月間売上推移</CardTitle>
           </CardHeader>
           <CardContent>
-            {barData.every((d) => d.収入 === 0) ? (
-              <Empty />
-            ) : (
-              <ResponsiveContainer width="100%" height={220}>
+            <ChartContainer config={chartConfig} className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={barData}>
-                  <XAxis dataKey="month" />
-                  <YAxis tickFormatter={(v) => `¥${(v / 10000).toFixed(0)}万`} />
-                  <Tooltip formatter={(v) => fmt(v)} />
-                  <Bar dataKey="収入" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                  <YAxis
+                    stroke="hsl(var(--muted-foreground))"
+                    fontSize={12}
+                    tickFormatter={(v) => `¥${(v / 10000).toFixed(0)}万`}
+                  />
+                  <ChartTooltip
+                    content={<ChartTooltipContent />}
+                    formatter={(v) => fmt(v)}
+                  />
+                  <Bar dataKey="revenue" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
-            )}
+            </ChartContainer>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">ステータス別案件数</CardTitle>
+            <CardTitle>ステータス別案件数</CardTitle>
           </CardHeader>
           <CardContent>
             {pieData.length === 0 ? (
-              <Empty />
+              <p className="py-24 text-center text-sm text-muted-foreground">データがありません</p>
             ) : (
-              <ResponsiveContainer width="100%" height={220}>
-                <PieChart>
-                  <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
-                    {pieData.map((_, i) => (
-                      <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Legend />
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
+              <ChartContainer config={pieConfig} className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={100}
+                      dataKey="value"
+                    >
+                      {pieData.map((_, i) => (
+                        <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </ChartContainer>
             )}
           </CardContent>
         </Card>
       </div>
 
-      {/* 直近の入出金 */}
+      {/* 直近の取引 */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">直近の入出金</CardTitle>
+          <CardTitle>最近の取引</CardTitle>
         </CardHeader>
         <CardContent>
           {recent5.length === 0 ? (
-            <Empty />
+            <p className="py-8 text-center text-sm text-muted-foreground">データがありません</p>
           ) : (
-            <div className="divide-y">
+            <div className="space-y-1">
               {recent5.map((t) => (
-                <div key={t.id} className="flex items-center justify-between py-3 text-sm">
+                <div
+                  key={t.id}
+                  className="flex items-center justify-between py-3 border-b border-border last:border-0"
+                >
                   <div>
-                    <p className="font-medium">{t.description || t.category || '—'}</p>
-                    <p className="text-muted-foreground">{t.date}</p>
+                    <p className="font-medium text-sm">{t.description || t.category || '—'}</p>
+                    <p className="text-xs text-muted-foreground">{t.date}</p>
                   </div>
-                  <span className={t.type === 'income' ? 'font-semibold text-green-600' : 'font-semibold text-red-500'}>
+                  <span className={`font-semibold text-sm ${t.type === 'income' ? 'text-[hsl(var(--chart-2))]' : 'text-muted-foreground'}`}>
                     {t.type === 'income' ? '+' : '-'}{fmt(t.amount)}
                   </span>
                 </div>
@@ -202,22 +252,4 @@ export default function DashboardPage() {
       </Card>
     </div>
   )
-}
-
-function KpiCard({ title, value, icon, loading }) {
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-        {icon}
-      </CardHeader>
-      <CardContent>
-        <p className="text-2xl font-bold">{loading ? '—' : value}</p>
-      </CardContent>
-    </Card>
-  )
-}
-
-function Empty() {
-  return <p className="py-8 text-center text-sm text-muted-foreground">データがありません</p>
 }
