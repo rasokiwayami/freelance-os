@@ -3,7 +3,7 @@
 A freelance business management web app powered by AI — manage projects, clients, and finances, and get instant insights from an AI assistant that knows your data.
 
 ![Dashboard](./docs/screenshot-dashboard.png)
-![AI Chat](./docs/screenshot-chat.png)
+![Projects](./docs/screenshot-projects.png)
 
 ## Features
 
