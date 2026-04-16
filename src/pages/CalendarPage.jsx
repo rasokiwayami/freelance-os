@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { DayPicker } from 'react-day-picker'
+import { ja } from 'date-fns/locale'
 import 'react-day-picker/style.css'
 import { useProjects } from '../hooks/useProjects'
 import { useTasks } from '../hooks/useTasks'
@@ -84,10 +85,9 @@ export default function CalendarPage() {
               modifiers={modifiers}
               modifiersStyles={modifiersStyles}
               modifiersClassNames={modifiersClassNames}
-              locale={{ localize: {}, formatLong: {} }}
+              locale={ja}
               showOutsideDays
               fixedWeeks
-              weekStartsOn={1}
             />
           </CardContent>
         </Card>
