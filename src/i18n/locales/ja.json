@@ -1,0 +1,56 @@
+{
+  "nav": {
+    "dashboard": "ダッシュボード",
+    "projects": "案件",
+    "clients": "クライアント",
+    "transactions": "入出金",
+    "calendar": "カレンダー",
+    "chat": "AIチャット",
+    "report": "レポート",
+    "settings": "設定"
+  },
+  "common": {
+    "save": "保存",
+    "cancel": "キャンセル",
+    "delete": "削除",
+    "edit": "編集",
+    "create": "新規作成",
+    "loading": "読み込み中...",
+    "noData": "データがありません",
+    "search": "検索...",
+    "export": "エクスポート",
+    "import": "インポート"
+  },
+  "project": {
+    "title": "案件",
+    "new": "新規案件",
+    "status": {
+      "estimate": "見積",
+      "in_progress": "進行中",
+      "completed": "完了",
+      "invoiced": "請求済",
+      "paid": "入金済"
+    }
+  },
+  "client": {
+    "title": "クライアント",
+    "new": "新規クライアント"
+  },
+  "transaction": {
+    "title": "入出金",
+    "new": "新規登録",
+    "income": "収入",
+    "expense": "支出"
+  },
+  "chat": {
+    "title": "AIチャット",
+    "placeholder": "メッセージを入力（Enter で送信、Shift+Enter で改行）",
+    "empty": "案件・収入・支出について何でも聞いてください"
+  },
+  "settings": {
+    "title": "設定",
+    "profile": "プロフィール",
+    "password": "パスワード変更",
+    "backup": "データバックアップ"
+  }
+}

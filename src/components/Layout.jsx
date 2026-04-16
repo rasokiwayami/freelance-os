@@ -10,26 +10,58 @@ import {
   LogOut,
   Menu,
   X,
+  Moon,
+  Sun,
+  Settings,
+  CalendarDays,
+  Search,
 } from 'lucide-react'
 import { Button } from './ui/button'
 import { cn } from '../lib/utils'
+import { useTheme } from '../contexts/ThemeContext'
+import { CommandPalette } from './CommandPalette'
+import { useTranslation } from 'react-i18next'
 
 const navItems = [
   { to: '/dashboard', label: 'ダッシュボード', icon: LayoutDashboard },
   { to: '/projects', label: '案件', icon: FolderKanban },
   { to: '/clients', label: 'クライアント', icon: Users },
   { to: '/transactions', label: '入出金', icon: Receipt },
+  { to: '/calendar', label: 'カレンダー', icon: CalendarDays },
   { to: '/chat', label: 'AIチャット', icon: MessageSquare },
+  { to: '/report', label: 'レポート', icon: Receipt },
+  { to: '/settings', label: '設定', icon: Settings },
 ]
 
 export default function Layout() {
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [cmdOpen, setCmdOpen] = useState(false)
+  const { theme, toggle } = useTheme()
+  const { i18n } = useTranslation()
+  const toggleLang = () => {
+    const next = i18n.language === 'ja' ? 'en' : 'ja'
+    i18n.changeLanguage(next)
+    localStorage.setItem('lang', next)
+  }
 
   const handleSignOut = async () => {
     await signOut()
     navigate('/login')
+  }
+
+  // Cmd+K / Ctrl+K でコマンドパレットを開く
+  const handleKeyDown = (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault()
+      setCmdOpen(true)
+    }
+  }
+
+  // グローバルに登録
+  if (typeof window !== 'undefined') {
+    window.onkeydown = handleKeyDown
   }
 
   return (
@@ -91,16 +123,38 @@ export default function Layout() {
       <div className="flex flex-1 flex-col md:pl-60 overflow-hidden">
         {/* ヘッダー */}
         <header className="h-16 border-b border-border bg-card px-6 flex items-center justify-between flex-shrink-0">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            onClick={() => setMobileOpen((v) => !v)}
-          >
-            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </Button>
-          <div className="ml-auto text-sm text-muted-foreground">{user?.email}</div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
+              onClick={() => setMobileOpen((v) => !v)}
+            >
+              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="hidden md:flex items-center gap-2 text-muted-foreground text-xs w-48"
+              onClick={() => setCmdOpen(true)}
+            >
+              <Search className="w-3.5 h-3.5" />
+              <span>検索...</span>
+              <kbd className="ml-auto text-[10px] bg-muted px-1.5 py-0.5 rounded">⌘K</kbd>
+            </Button>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={toggleLang} className="text-xs font-medium text-muted-foreground">
+              {i18n.language === 'ja' ? 'EN' : 'JA'}
+            </Button>
+            <Button variant="ghost" size="icon" onClick={toggle} title="テーマ切り替え">
+              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </Button>
+            <span className="text-sm text-muted-foreground hidden sm:block">{user?.email}</span>
+          </div>
         </header>
+
+        <CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
 
         {/* コンテンツ */}
         <main className="flex-1 overflow-auto p-8">

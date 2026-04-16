@@ -5,8 +5,10 @@ import {
 } from 'recharts'
 import { useProjects } from '../hooks/useProjects'
 import { useTransactions } from '../hooks/useTransactions'
+import { useClients } from '../hooks/useClients'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
-import { TrendingUp, Briefcase, AlertCircle, CreditCard } from 'lucide-react'
+import { SkeletonKPI } from '../components/ui/skeleton'
+import { TrendingUp, Briefcase, AlertCircle, CreditCard, Users, Bell } from 'lucide-react'
 
 const fmt = (n) => `¥${Number(n).toLocaleString('ja-JP')}`
 
@@ -49,6 +51,7 @@ function getLast6Months() {
 export default function DashboardPage() {
   const { data: projects, loading: pLoading } = useProjects()
   const { data: transactions, loading: tLoading } = useTransactions()
+  const { data: clients, loading: cLoading } = useClients()
 
   const now = new Date()
   const thisMonth = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}`
@@ -103,11 +106,62 @@ export default function DashboardPage() {
   }, [projects])
 
   const recent5 = useMemo(() => transactions.slice(0, 5), [transactions])
-  const loading = pLoading || tLoading
+  const loading = pLoading || tLoading || cLoading
+
+  // 今月の新規クライアント数
+  const newClientsThisMonth = useMemo(() =>
+    clients.filter((c) => c.created_at && getMonthKey(c.created_at) === thisMonth).length,
+    [clients, thisMonth]
+  )
+
+  // 通知: 締切3日以内の案件
+  const today = new Date()
+  const in3days = new Date(today)
+  in3days.setDate(today.getDate() + 3)
+  const deadlineSoon = useMemo(() =>
+    projects.filter((p) => {
+      if (!p.deadline || p.status === 'completed' || p.status === 'paid') return false
+      const d = new Date(p.deadline)
+      return d >= today && d <= in3days
+    }),
+    [projects]
+  )
+
+  // 通知: 期限超過の取引
+  const todayStr = today.toISOString().slice(0, 10)
+  const overdueTransactions = useMemo(() =>
+    transactions.filter((t) =>
+      t.due_date && t.due_date < todayStr && t.payment_status !== 'paid'
+    ),
+    [transactions, todayStr]
+  )
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
+      {/* 通知バナー */}
+      {(deadlineSoon.length > 0 || overdueTransactions.length > 0) && (
+        <div className="space-y-2">
+          {deadlineSoon.map((p) => (
+            <div key={p.id} className="flex items-center gap-3 px-4 py-3 rounded-lg bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200">
+              <Bell size={15} className="shrink-0" />
+              <span className="text-sm">
+                <strong>{p.title}</strong> の締切が近づいています（{p.deadline}）
+              </span>
+            </div>
+          ))}
+          {overdueTransactions.map((t) => (
+            <div key={t.id} className="flex items-center gap-3 px-4 py-3 rounded-lg bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200">
+              <AlertCircle size={15} className="shrink-0" />
+              <span className="text-sm">
+                <strong>{t.description || t.category || '取引'}</strong> の支払期日が超過しています（{t.due_date}）
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* KPIカード */}
+      {loading ? <SkeletonKPI /> : null}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="border-l-4 border-l-primary">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -146,6 +200,39 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{loading ? '—' : fmt(monthlyExpense)}</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* 追加KPI */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">今月の新規クライアント</CardTitle>
+            <Users className="w-4 h-4 text-primary" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{loading ? '—' : `${newClientsThisMonth} 社`}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">締切間近の案件</CardTitle>
+            <AlertCircle className="w-4 h-4 text-amber-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{loading ? '—' : `${deadlineSoon.length} 件`}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">今月の純利益</CardTitle>
+            <TrendingUp className="w-4 h-4 text-green-500" />
+          </CardHeader>
+          <CardContent>
+            <div className={`text-2xl font-bold ${monthlyIncome - monthlyExpense >= 0 ? '' : 'text-red-500'}`}>
+              {loading ? '—' : fmt(monthlyIncome - monthlyExpense)}
+            </div>
           </CardContent>
         </Card>
       </div>

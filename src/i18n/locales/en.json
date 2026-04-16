@@ -1,0 +1,56 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "projects": "Projects",
+    "clients": "Clients",
+    "transactions": "Transactions",
+    "calendar": "Calendar",
+    "chat": "AI Chat",
+    "report": "Report",
+    "settings": "Settings"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "New",
+    "loading": "Loading...",
+    "noData": "No data",
+    "search": "Search...",
+    "export": "Export",
+    "import": "Import"
+  },
+  "project": {
+    "title": "Projects",
+    "new": "New Project",
+    "status": {
+      "estimate": "Estimate",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "invoiced": "Invoiced",
+      "paid": "Paid"
+    }
+  },
+  "client": {
+    "title": "Clients",
+    "new": "New Client"
+  },
+  "transaction": {
+    "title": "Transactions",
+    "new": "New Entry",
+    "income": "Income",
+    "expense": "Expense"
+  },
+  "chat": {
+    "title": "AI Chat",
+    "placeholder": "Type a message (Enter to send, Shift+Enter for newline)",
+    "empty": "Ask me anything about your projects, income or expenses"
+  },
+  "settings": {
+    "title": "Settings",
+    "profile": "Profile",
+    "password": "Change Password",
+    "backup": "Data Backup"
+  }
+}

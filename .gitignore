@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+.vercel
+.claude
+
+*storybook.log
+storybook-static

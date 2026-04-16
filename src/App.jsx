@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
 import Layout from './components/Layout'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import DashboardPage from './pages/DashboardPage'
@@ -8,6 +9,9 @@ import ProjectsPage from './pages/ProjectsPage'
 import ClientsPage from './pages/ClientsPage'
 import TransactionsPage from './pages/TransactionsPage'
 import ChatPage from './pages/ChatPage'
+import CalendarPage from './pages/CalendarPage'
+import SettingsPage from './pages/SettingsPage'
+import ReportPage from './pages/ReportPage'
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth()
@@ -34,11 +38,14 @@ export default function App() {
             </PrivateRoute>
           }
         >
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/projects" element={<ProjectsPage />} />
-          <Route path="/clients" element={<ClientsPage />} />
-          <Route path="/transactions" element={<TransactionsPage />} />
-          <Route path="/chat" element={<ChatPage />} />
+          <Route path="/dashboard" element={<ErrorBoundary><DashboardPage /></ErrorBoundary>} />
+          <Route path="/projects" element={<ErrorBoundary><ProjectsPage /></ErrorBoundary>} />
+          <Route path="/clients" element={<ErrorBoundary><ClientsPage /></ErrorBoundary>} />
+          <Route path="/transactions" element={<ErrorBoundary><TransactionsPage /></ErrorBoundary>} />
+          <Route path="/calendar" element={<ErrorBoundary><CalendarPage /></ErrorBoundary>} />
+          <Route path="/chat" element={<ErrorBoundary><ChatPage /></ErrorBoundary>} />
+          <Route path="/settings" element={<ErrorBoundary><SettingsPage /></ErrorBoundary>} />
+          <Route path="/report" element={<ErrorBoundary><ReportPage /></ErrorBoundary>} />
         </Route>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
       </Routes>
