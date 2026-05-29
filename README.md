@@ -11,7 +11,7 @@ A freelance business management web app powered by AI — manage projects, clien
 - **Project management** — Create, edit, and delete projects with status tracking (estimate → in progress → completed → invoiced → paid)
 - **Client management** — Manage clients with company info and project associations
 - **Income & expense tracking** — Log transactions linked to projects, filter by type and month
-- **AI assistant** — Chat with Claude AI about your projects and finances; the AI has full context of your data
+- **AI assistant** — Chat with a Gemini-backed AI assistant about your projects and finances; the browser sends the current app data as context to the local/serverless chat endpoint
 - **Authentication** — Email/password auth with per-user data isolation via Supabase RLS
 
 ## Tech Stack
@@ -24,7 +24,7 @@ A freelance business management web app powered by AI — manage projects, clien
 | UI Components | shadcn/ui |
 | Database & Auth | Supabase (PostgreSQL + Auth + RLS) |
 | AI Proxy | Vercel Serverless Functions (Node.js) |
-| AI Model | Anthropic Claude API |
+| AI Model | Google Gemini API (`gemini-2.5-flash`) |
 | Charts | Recharts |
 | Forms | React Hook Form + Zod |
 | Deploy | Vercel |
@@ -41,8 +41,8 @@ Browser (React + Vite)
     │         RLS: each user sees only their own data
     │
     └── Vercel Serverless Function (/api/chat)
-          └── Fetches user data from Supabase
-              └── Calls Anthropic Claude API with data context
+          └── Receives current user data from the browser
+              └── Calls Google Gemini API with data context
 ```
 
 ## Local Setup
@@ -57,7 +57,7 @@ npm install
 
 # 3. Create .env.local
 cp .env.example .env.local
-# Fill in your Supabase and Anthropic credentials
+# Fill in your Supabase and Gemini credentials
 
 # 4. Run (use vercel dev to enable /api routes locally)
 npm install -g vercel
@@ -68,7 +68,7 @@ vercel dev
 ```
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
-ANTHROPIC_API_KEY=sk-ant-...
+GEMINI_API_KEY=...
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
@@ -86,6 +86,7 @@ npm run test:e2e
 
 ## Roadmap
 
+- [ ] Harden AI proxy before treating this as production: auth checks, tighter CORS, input limits, rate limits, and prompt/action validation
 - [ ] Function Calling — let the AI create projects and log transactions directly from chat
 - [ ] Email notifications — invoice reminders via Resend
 - [ ] PDF invoice generation
