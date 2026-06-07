@@ -40,7 +40,9 @@ Copy `.env.local` from `.env.example`. Required variables:
 | `SUPABASE_SERVICE_ROLE_KEY` | Vercel serverless function |
 | `GEMINI_API_KEY` | Vercel serverless function — AI chat |
 
-> Note: `.env.example` lists `ANTHROPIC_API_KEY`, but `api/chat.js` currently uses Google Gemini (`GEMINI_API_KEY` / `gemini-2.5-flash`). The `@anthropic-ai/sdk` package is installed but not yet wired up.
+The current chat implementation in `api/chat.js` uses Google Gemini
+(`GEMINI_API_KEY` / `gemini-2.5-flash`). The `@anthropic-ai/sdk` package is
+installed but not wired up.
 
 ## Architecture
 
