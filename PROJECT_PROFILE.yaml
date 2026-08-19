@@ -2,7 +2,6 @@ project:
   repo: rasokiwayami/freelance-os
   type: portfolio_product_candidate
   domain: freelance_operations
-  orchestrator: project_orchestrator
   primary_goal: Local-first freelance business management app with Supabase-backed workflows
   default_branch: master
   visibility: private_or_public_per_current_remote
@@ -26,7 +25,7 @@ authority:
     - Supabase production data mutation without explicit approval
     - external deployment without explicit approval
     - raw user/customer/business data in tracked files
-    - push without required Review Controller approval
+    - push without required independent Sol max review evidence bound to the current HEAD
 
 autonomy:
   default_level: L5_for_development
@@ -49,17 +48,17 @@ autonomy:
     - dev.billing_or_paid_service_change
     - publication.public_claim
 
-global_coding_department:
-  default_route:
-    - Executive Orchestrator
-    - FreelanceOS Project Orchestrator
-    - Implementation Planning Worker
-    - Implementation Worker
-    - Implementation Review Controller
-  queue_request_command: cd /Users/sora/dev/jinsei && python3 scripts/dispatch_codex_session.py --queue-request --project "FreelanceOS" --repo /Users/sora/dev/freelance-os
-  run_queue_command: cd /Users/sora/dev/jinsei && python3 scripts/dispatch_codex_session.py --from-queue --limit 3
-  push_review_check_command: cd /Users/sora/dev/jinsei && python3 scripts/dispatch_codex_session.py --check-push-review --project "FreelanceOS"
-  required_for:
+development_route:
+  instruction_source: /Users/sora/dev/jinsei/CODEX_GLOBAL_AGENTS.md
+  boundary_command: /Users/sora/dev/jinsei/bin/jinsei
+  model_launch_owner: Codex_parent
+  route: "Plan -> Work -> independent Sol max Review"
+  evidence_binding:
+    - current_TaskIntent
+    - current_HEAD
+    - fresh_verification
+    - independent_Sol_max_review
+  applies_to:
     - non_trivial_implementation
     - multi_file_changes
     - auth_or_safety_work
