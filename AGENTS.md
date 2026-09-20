@@ -1,4 +1,4 @@
-# Agent Guidelines
+# freelance-os/AGENTS.md
 
 This repository is a local-first FreelanceOS app. Treat source code, tests,
 package scripts, `CLAUDE.md`, and `PROJECT_PROFILE.yaml` as the operating truth.
